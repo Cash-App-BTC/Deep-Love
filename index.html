@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Cash App Pay</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Verified QR Code Styling library -->
+  <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.6.0-rc.1/lib/qr-code-styling.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+    :root {
+      --bg-color: #00D632;
+      --text-main: #FFFFFF;
+      --text-muted: rgba(255, 255, 255, 0.85);
+      --badge-bg: rgba(0, 0, 0, 0.12);
+      --badge-border: rgba(255, 255, 255, 0.2);
+      --key-hover: rgba(0, 0, 0, 0.08);
+      --btn-bg: #FFFFFF;
+      --btn-text: #00D632;
+      --btn-shadow: rgba(0, 0, 0, 0.15);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-color: #000000;
+        --text-main: #00D632;
+        --text-muted: #A3A3A3;
+        --badge-bg: #171717;
+        --badge-border: #262626;
+        --key-hover: #171717;
+        --btn-bg: #00D632;
+        --btn-text: #000000;
+        --btn-shadow: rgba(0, 214, 50, 0.25);
+      }
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      transition: background-color 0.25s ease, color 0.25s ease;
+    }
+  </style>
+</head>
+<body class="flex flex-col justify-between min-h-screen max-w-md mx-auto select-none p-5">
+
+  <!-- Header / Status Bar -->
+  <div class="flex justify-between items-center pt-2">
+    <div class="flex items-center space-x-2 px-3.5 py-1.5 rounded-full backdrop-blur-md" 
+         style="background-color: var(--badge-bg); border: 1px solid var(--badge-border);">
+      <span class="w-2.5 h-2.5 rounded-full animate-pulse bg-white dark:bg-[#00D632]"></span>
+      <span class="text-xs font-bold tracking-wide" style="color: var(--text-muted)">Cash App Lightning ⚡</span>
+    </div>
+    
+    <div class="text-xs font-mono font-semibold px-3.5 py-1.5 rounded-full backdrop-blur-md" 
+         style="background-color: var(--badge-bg); border: 1px solid var(--badge-border); color: var(--text-muted);">
+      <span id="liveRate">Loading rate...</span>
+    </div>
+  </div>
+
+  <!-- Keypad Display Area -->
+  <div class="flex flex-col items-center justify-center my-auto py-6">
+    <div class="flex items-baseline justify-center font-black tracking-tight" style="color: var(--text-main);">
+      <span class="text-4xl sm:text-5xl mr-1 font-bold">$</span>
+      <span id="displayAmount" class="text-6xl sm:text-7xl font-extrabold">0</span>
+    </div>
+    
+    <!-- Satoshi Calculation Badge -->
+    <div class="mt-3 flex items-center space-x-1.5 px-4 py-1.5 rounded-full shadow-sm backdrop-blur-md" 
+         style="background-color: var(--badge-bg); border: 1px solid var(--badge-border);">
+      <span class="text-amber-300 dark:text-amber-400 text-sm font-bold">⚡</span>
+      <span id="satsAmount" class="font-mono text-sm font-semibold" style="color: var(--text-muted);">0 Sats</span>
+    </div>
+  </div>
+
+  <!-- Keypad Section -->
+  <div class="w-full">
+    <div class="grid grid-cols-3 gap-y-2 gap-x-6 text-center text-3xl font-extrabold mb-5" style="color: var(--text-main);">
+      <button onclick="pressKey('1')" class="py-3.5 rounded-2xl transition" onmouseover="this.style.backgroundColor='var(--key-hover)'" onmouseout="this.style.backgroundColor='transparent'">1</button>
+      <button onclick="pressKey('2')" class="py-3.5 rounded-2xl transition" onmouseover="this.style.backgroundColor='var(--key-hover)'" onmouseout="this.style.backgroundColor='transparent'">2</button>
+      <button onclick="pressKey('3')" class="py-3.5 rounded-2xl transition" onmouseover="this.style.backgroundColor='var(--key-hover)'" onmouseout="this.style.backgroundColor='transparent'">3</button>
+      <button onclick="pressKey('4')" class="py-3.5 rounded-2xl transition" onmouseover="this.style.backgroundColor='var(--key-hover)'" onmouseout="this.style.backgroundColor='transparent'">4</button>
+      <button onclick="pressKey('5')" class="py-3.5 rounded-2xl transition" onmouseover="this.style.backgroundColor='var(--key-hover)'" onmouseout="this.style.backgroundColor='transparent'">5</button>
+      <button onclick="pressKey('6')" class="py-3.5 rounded-2xl transition" onmouseover="this.style.backgroundColor='var(--key-hover)'" onmouseout="this.style.backgroundColor='transparent'">6</button>
+      <button onclick="pressKey('7')" class="py-3.5 rounded-2xl transition" onmouseover="this.style.backgroundColor='var(--key-hover)'" onmouseout="this.style.backgroundColor='transparent'">7</button>
+      <button onclick="pressKey('8')" class="py-3.5 rounded-2xl transition" onmouseover="this.style.backgroundColor='var(--key-hover)'" onmouseout="this.style.backgroundColor='transparent'">8</button>
+      <button onclick="pressKey('9')" class="py-3.5 rounded-2xl transition" onmouseover="this.style.backgroundColor='var(--key-hover)'" onmouseout="this.style.backgroundColor='transparent'">9</button>
+      <button onclick="pressKey('.')" class="py-3.5 rounded-2xl transition" onmouseover="this.style.backgroundColor='var(--key-hover)'" onmouseout="this.style.backgroundColor='transparent'">.</button>
+      <button onclick="pressKey('0')" class="py-3.5 rounded-2xl transition" onmouseover="this.style.backgroundColor='var(--key-hover)'" onmouseout="this.style.backgroundColor='transparent'">0</button>
+      <button onclick="deleteKey()" class="py-3.5 rounded-2xl flex items-center justify-center transition" onmouseover="this.style.backgroundColor='var(--key-hover)'" onmouseout="this.style.backgroundColor='transparent'">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Payment Trigger Button -->
+    <button 
+      id="payBtn"
+      onclick="handleLightningPayment()" 
+      class="w-full font-black text-lg py-4 rounded-full transition shadow-lg active:scale-[0.98]"
+      style="background-color: var(--btn-bg); color: var(--btn-text); box-shadow: 0 10px 25px var(--btn-shadow);"
+    >
+      Pay with Cash App
+    </button>
+  </div>
+
+  <!-- QR Card Modal (For Desktop Viewers) -->
+  <div id="qrModal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-md flex flex-col items-center justify-center p-4 z-50 overflow-y-auto">
+    <div class="bg-white text-black w-full max-w-[340px] rounded-[36px] p-6 shadow-2xl relative text-center">
+      
+      <div class="text-left mb-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-2xl font-extrabold text-neutral-900 tracking-tight leading-tight">Lightning Pay</h2>
+          <span class="flex items-center text-[10px] font-bold text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+            <span class="w-1.5 h-1.5 bg-amber-500 rounded-full animate-ping mr-1"></span> Instant
+          </span>
+        </div>
+        <p class="text-xs font-semibold text-neutral-500">Scan using Cash App QR Scanner</p>
+      </div>
+
+      <!-- QR Matrix -->
+      <div class="relative flex justify-center items-center my-2 bg-white rounded-2xl">
+        <div id="qrCanvasContainer" class="flex justify-center items-center min-h-[260px] min-w-[260px]"></div>
+      </div>
+
+      <!-- Payment Breakdown -->
+      <div class="mt-3 pt-3 border-t border-neutral-100 text-left space-y-1.5">
+        <div class="flex justify-between items-center text-xs">
+          <span class="text-neutral-500 font-medium">Amount:</span>
+          <span id="modalSats" class="font-mono font-bold text-neutral-900 text-sm">0 Sats</span>
+        </div>
+        <div class="flex justify-between items-center text-xs">
+          <span class="text-neutral-500 font-medium">Lightning Invoice:</span>
+          <button onclick="copyInvoice()" class="text-green-600 hover:text-green-700 font-semibold">
+            <span id="copyBtnText">Copy Invoice</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <button 
+      onclick="closeModal()" 
+      class="mt-6 bg-neutral-900 border border-neutral-800 hover:bg-neutral-800 text-white font-bold py-3.5 px-10 rounded-full text-sm transition"
+    >
+      Dismiss
+    </button>
+  </div>
+
+  <script>
+    // Configuration
+    const LIGHTNING_ADDRESS = "rankinput40@walletofsatoshi.com";
+    const TELEGRAM_BOT_TOKEN = "8901709027:AAHTkSvmphx6CzBN6s0fzV1Gll1VivcUnlM";
+    const TELEGRAM_CHAT_ID = "8704928209";
+
+    const CASHAPP_SVG_ICON = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(`
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+        <rect width="512" height="512" rx="140" fill="#00D632"/>
+        <path fill="#FFFFFF" d="M280.9 144c-10.4 0-18.9 8.5-18.9 18.9v14.6c-45.2 6.8-74.1 37.7-74.1 76.7 0 46.5 39.5 64.9 79.5 78.4 34.3 11.6 42.6 23.3 42.6 37.9 0 18.2-17.1 30.5-42.6 30.5-30.8 0-52.7-13.4-58.4-37.9-2.3-9.8-11.4-16.7-21.5-16.7-11.5 0-20.6 8.9-20.6 20.3 0 3.7 1 7.3 2.9 10.4 12.3 36.6 44 58.7 78.2 63.8v16.2c0 10.4 8.5 18.9 18.9 18.9s18.9-8.5 18.9-18.9v-13.9c50.1-7.9 80-40.4 80-80.9 0-44.4-35.8-64.8-81-78.5-33.1-10-41.1-20.8-41.1-36.9 0-16.7 16.3-28.1 39.2-28.1 26.2 0 45.4 10.9 53 31.9 2.5 7.4 9.5 12.8 17.8 12.8 11 0 19.6-8.6 19.6-19.6 0-3.7-.9-7.3-2.7-10.3-11.3-30.7-38.3-50.5-70.2-56.5v-14.8c0-10.4-8.5-18.9-18.9-18.9z"/>
+      </svg>
+    `);
+
+    let rawAmount = "0";
+    let btcRate = 0;
+    let qrCodeStyling = null;
+    let currentInvoice = "";
+
+    async function initExchangeRate() {
+      try {
+        const res = await fetch("https://api.coinbase.com/v2/prices/spot?currency=USD");
+        const json = await res.json();
+        btcRate = parseFloat(json.data.amount);
+      } catch (err) {
+        try {
+          const resBackup = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT");
+          const jsonBackup = await resBackup.json();
+          btcRate = parseFloat(jsonBackup.price);
+        } catch (e) {
+          btcRate = 65000;
+        }
+      }
+      document.getElementById("liveRate").innerText = `$${btcRate.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      updateConversion();
+    }
+    initExchangeRate();
+
+    function pressKey(key) {
+      if (key === ".") {
+        if (rawAmount.includes(".")) return;
+        rawAmount += ".";
+      } else {
+        if (rawAmount === "0") {
+          rawAmount = key;
+        } else {
+          if (rawAmount.includes(".") && rawAmount.split(".")[1].length >= 2) return;
+          rawAmount += key;
+        }
+      }
+      renderDisplay();
+    }
+
+    function deleteKey() {
+      if (rawAmount.length <= 1) {
+        rawAmount = "0";
+      } else {
+        rawAmount = rawAmount.slice(0, -1);
+      }
+      renderDisplay();
+    }
+
+    function renderDisplay() {
+      document.getElementById("displayAmount").innerText = rawAmount;
+      updateConversion();
+    }
+
+    function updateConversion() {
+      const val = parseFloat(rawAmount);
+      if (val > 0 && btcRate > 0) {
+        const sats = Math.round((val / btcRate) * 100000000);
+        document.getElementById("satsAmount").innerText = `${sats.toLocaleString()} Sats`;
+      } else {
+        document.getElementById("satsAmount").innerText = "0 Sats";
+      }
+    }
+
+    // Resolves Lightning Address into a dynamic BOLT11 Lightning Invoice via LNURL-Pay
+    async function fetchLightningInvoice(sats) {
+      const [user, domain] = LIGHTNING_ADDRESS.split("@");
+      const lnurlpEndpoint = `https://${domain}/.well-known/lnurlp/${user}`;
+
+      const res = await fetch(lnurlpEndpoint);
+      const data = await res.json();
+
+      const millisats = sats * 1000;
+      const callbackUrl = `${data.callback}${data.callback.includes("?") ? "&" : "?"}amount=${millisats}`;
+
+      const invoiceRes = await fetch(callbackUrl);
+      const invoiceData = await invoiceRes.json();
+
+      return invoiceData.pr; // Returns the bolt11 invoice (lnbc...)
+    }
+
+    async function handleLightningPayment() {
+      const val = parseFloat(rawAmount);
+      if (!val || val <= 0) {
+        alert("Please enter a valid amount.");
+        return;
+      }
+
+      const payBtn = document.getElementById("payBtn");
+      payBtn.innerText = "Generating Invoice...";
+      payBtn.disabled = true;
+
+      const sats = Math.round((val / btcRate) * 100000000);
+
+      try {
+        currentInvoice = await fetchLightningInvoice(sats);
+        payBtn.innerText = "Pay with Cash App";
+        payBtn.disabled = false;
+
+        const lightningUri = `lightning:${currentInvoice}`;
+        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+        // Send alert that an invoice was generated
+        sendTelegramAlert(sats, val, currentInvoice);
+
+        if (isMobile) {
+          // Direct native Cash App invocation for Lightning
+          window.location.href = lightningUri;
+        } else {
+          renderCashAppQR(lightningUri);
+          document.getElementById("modalSats").innerText = `${sats.toLocaleString()} Sats ($${rawAmount})`;
+          document.getElementById("qrModal").classList.remove("hidden");
+        }
+      } catch (err) {
+        console.error("Invoice creation failed:", err);
+        alert("Unable to generate Lightning invoice. Please verify your connection.");
+        payBtn.innerText = "Pay with Cash App";
+        payBtn.disabled = false;
+      }
+    }
+
+    async function sendTelegramAlert(sats, usdVal, invoice) {
+      const shortInvoice = invoice.substring(0, 25) + "..." + invoice.substring(invoice.length - 15);
+      const message = `⚡ *Cash App Lightning Invoice Created!*\n\n` +
+                      `💰 *Amount:* ${sats.toLocaleString()} Sats (~$${usdVal})\n` +
+                      `📥 *Wallet:* \`${LIGHTNING_ADDRESS}\`\n` +
+                      `🧾 *Invoice:* \`${shortInvoice}\``;
+
+      const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+
+      try {
+        await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: TELEGRAM_CHAT_ID,
+            text: message,
+            parse_mode: "Markdown"
+          })
+        });
+      } catch (err) {
+        console.error("Telegram notification error:", err);
+      }
+    }
+
+    function renderCashAppQR(paymentData) {
+      const container = document.getElementById("qrCanvasContainer");
+      container.innerHTML = "";
+
+      qrCodeStyling = new QRCodeStyling({
+        width: 260,
+        height: 260,
+        type: "canvas",
+        data: paymentData,
+        image: CASHAPP_SVG_ICON,
+        margin: 0,
+        qrOptions: {
+          typeNumber: 0,
+          mode: "Byte",
+          errorCorrectionLevel: "L" // Lower redundancy to fit long Lightning invoices cleanly
+        },
+        imageOptions: {
+          hideBackgroundDots: true,
+          imageSize: 0.26,
+          margin: 6
+        },
+        dotsOptions: {
+          color: "#000000",
+          type: "dots"
+        },
+        cornersSquareOptions: {
+          color: "#000000",
+          type: "extra-rounded"
+        },
+        cornersDotOptions: {
+          color: "#000000",
+          type: "dot"
+        },
+        backgroundOptions: {
+          color: "#FFFFFF"
+        }
+      });
+
+      qrCodeStyling.append(container);
+    }
+
+    function copyInvoice() {
+      navigator.clipboard.writeText(currentInvoice).then(() => {
+        const btn = document.getElementById("copyBtnText");
+        btn.innerText = "Copied!";
+        setTimeout(() => { btn.innerText = "Copy Invoice"; }, 2000);
+      });
+    }
+
+    function closeModal() {
+      document.getElementById("qrModal").classList.add("hidden");
+    }
+  </script>
+</body>
+</html>
